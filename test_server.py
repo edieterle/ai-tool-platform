@@ -25,7 +25,7 @@ async def test_word_count():
         }
 
 @pytest.mark.anyio
-async def extract_urls_multiple_urls_with_punctuation():
+async def test_extract_urls_multiple_urls_with_punctuation():
     async with Client(mcp) as client:
         result = await client.call_tool(
             "extract_urls", 
@@ -44,7 +44,7 @@ async def extract_urls_multiple_urls_with_punctuation():
         }
 
 @pytest.mark.anyio
-async def extract_urls_returns_empty_list_when_no_urls():
+async def test_extract_urls_returns_empty_list_when_no_urls():
     async with Client(mcp) as client:
         result = await client.call_tool(
             "extract_urls", 
@@ -57,13 +57,20 @@ async def extract_urls_returns_empty_list_when_no_urls():
         assert response == {"urls": []}
 
 @pytest.mark.anyio
-async def read_file_returns_file_contents(tmp_path):
+async def test_read_file_returns_file_contents(tmp_path):
     file = tmp_path / "test.txt"
     file.write_text("Hello, world!", encoding="utf-8")
+
     async with Client(mcp) as client:
         result = await client.call_tool(
             "read_file",
             {"path": str(file)}
-        ) 
+        )
+
         assert not result.is_error
-        assert result.content[0].text == "Hello, world!"
+        response = json.loads(result.content[0].text)
+
+        assert response == {
+            "filename": "test.txt",
+            "content": "Hello, world!",
+        }

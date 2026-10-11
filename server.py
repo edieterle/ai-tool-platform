@@ -33,7 +33,7 @@ def extract_urls(text: str) -> dict:
 
 
 @mcp.tool()
-def read_file(path: str) -> str:
+def read_file(path: str) -> dict:
     """Read a supported text file and return its contents."""
     file_path = Path(path).resolve()
 
@@ -45,8 +45,11 @@ def read_file(path: str) -> str:
 
     if file_path.stat().st_size > MAX_FILE_SIZE:
         raise ValueError("File is too large.")
-
-    return file_path.read_text(encoding="utf-8")
+    
+    return {
+        "filename": file_path.name,
+        "content": file_path.read_text(encoding="utf-8"),
+    }
 
 
 if __name__ == "__main__":
