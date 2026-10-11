@@ -4,6 +4,7 @@ from mcp import Client
 
 from server import mcp
 
+
 @pytest.mark.anyio
 async def test_health_check():
     async with Client(mcp) as client:
@@ -54,3 +55,15 @@ async def extract_urls_returns_empty_list_when_no_urls():
         assert not result.is_error
         response = json.loads(result.content[0].text)
         assert response == {"urls": []}
+
+@pytest.mark.anyio
+async def read_file_returns_file_contents(tmp_path):
+    file = tmp_path / "test.txt"
+    file.write_text("Hello, world!", encoding="utf-8")
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "read_file",
+            {"path": str(file)}
+        ) 
+        assert not result.is_error
+        assert result.content[0].text == "Hello, world!"
