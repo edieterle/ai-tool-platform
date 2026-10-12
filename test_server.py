@@ -1,8 +1,10 @@
 import json
+
 import pytest
 from mcp import Client
 
 from server import mcp
+
 
 @pytest.mark.anyio
 async def test_health_check():
@@ -13,10 +15,11 @@ async def test_health_check():
         response = json.loads(result.content[0].text)
         assert response == {"status": "ok"}
 
+
 @pytest.mark.anyio
 async def test_word_count():
     async with Client(mcp) as client:
-        result = await client.call_tool("word_count", {"text": "hello, world!"})
+        result = await client.call_tool("word_count", {"text": "Hello, world!"})
         assert not result.is_error
 
         response = json.loads(result.content[0].text)
@@ -25,25 +28,24 @@ async def test_word_count():
             "characters": 13,
         }
 
+
 @pytest.mark.anyio
 async def test_extract_urls_multiple_urls_with_punctuation():
     async with Client(mcp) as client:
         result = await client.call_tool(
-            "extract_urls", 
-            {
-                "text": 
-                "Visit https://test.org, then http://example.com."
-            },
+            "extract_urls",
+            {"text": "Visit http://test.org, then https://example.com."},
         )
         assert not result.is_error
 
         response = json.loads(result.content[0].text)
         assert response == {
             "urls": [
-                "https://test.org",
-                "http://example.com",
+                "http://test.org",
+                "https://example.com",
             ]
         }
+
 
 @pytest.mark.anyio
 async def test_read_file_returns_file_contents(tmp_path):
@@ -51,10 +53,7 @@ async def test_read_file_returns_file_contents(tmp_path):
     file.write_text("Hello, world!", encoding="utf-8")
 
     async with Client(mcp) as client:
-        result = await client.call_tool(
-            "read_file",
-            {"path": str(file)}
-        )
+        result = await client.call_tool("read_file", {"path": str(file)})
         assert not result.is_error
 
         response = json.loads(result.content[0].text)
@@ -62,6 +61,7 @@ async def test_read_file_returns_file_contents(tmp_path):
             "filename": "test.txt",
             "content": "Hello, world!",
         }
+
 
 @pytest.mark.anyio
 async def test_web_search_returns_results():
@@ -71,7 +71,7 @@ async def test_web_search_returns_results():
             {
                 "query": "Python MCP tutorial",
                 "max_results": 2,
-            }
+            },
         )
         assert not result.is_error
 
@@ -82,3 +82,18 @@ async def test_web_search_returns_results():
             assert "title" in item
             assert "url" in item
             assert "snippet" in item
+
+
+@pytest.mark.anyio
+async def test_fetch_webpage_returns_content():
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "fetch_webpage",
+            {"url": "https://example.com"},
+        )
+        assert not result.is_error
+
+        response = json.loads(result.content[0].text)
+        assert response["url"] == "https://example.com"
+        assert response["title"] == "Example Domain"
+        assert response["content"]
