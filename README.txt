@@ -4,4 +4,6 @@ test server: uv run pytest -v
 format imports: uv run ruff check --select I --fix .
 format code: uv run ruff format .
 
-start Docker container: docker compose up -d
+start containers: docker compose up -d
+stop containers: docker compose down
+remove Compose-managed named volumes: docker compose down -v
