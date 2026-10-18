@@ -4,10 +4,11 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import httpx
+import psycopg
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from mcp.server import MCPServer
-from psycopg2 import dict_row
+from psycopg.rows import dict_row
 
 load_dotenv()
 mcp = MCPServer("ai-tool-platform")
