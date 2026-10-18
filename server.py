@@ -181,7 +181,7 @@ def list_documents(limit: int = 20) -> dict:
                 LIMIT %s
                 """,
                 (limit,),
-            )   
+            )
             rows = cur.fetchall()
 
     return {

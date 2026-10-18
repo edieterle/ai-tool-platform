@@ -111,4 +111,3 @@ async def test_list_documents_returns_documents():
         response = json.loads(result.content[0].text)
         assert "documents" in response
         assert isinstance(response["documents"], list)
-        
