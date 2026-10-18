@@ -7,6 +7,7 @@ import httpx
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from mcp.server import MCPServer
+from psycopg2 import dict_row
 
 load_dotenv()
 mcp = MCPServer("ai-tool-platform")
@@ -155,6 +156,42 @@ async def fetch_webpage(url: str) -> dict:
         "url": url,
         "title": title,
         "content": text[:MAX_CONTENT_CHARACTERS],
+    }
+
+
+@mcp.tool()
+def list_documents(limit: int = 20) -> dict:
+    """Read documents from the regular PostgreSQL database."""
+    if not 1 <= limit <= 100:
+        raise ValueError("Limit must be between 1 and 100.")
+
+    with psycopg.connect(
+        host=os.getenv("POSTGRES_HOST", "localhost"),
+        port=int(os.getenv("POSTGRES_PORT", "5432")),
+        dbname=os.getenv("POSTGRES_DB"),
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASSWORD"),
+    ) as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                """
+                SELECT id, title, content, created_at
+                FROM documents
+                ORDER BY id DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )   
+            rows = cur.fetchall()
+
+    return {
+        "documents": [
+            {
+                **row,
+                "created_at": row["created_at"].isoformat(),
+            }
+            for row in rows
+        ]
     }
 
 

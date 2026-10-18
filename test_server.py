@@ -97,3 +97,18 @@ async def test_fetch_webpage_returns_content():
         assert response["url"] == "https://example.com"
         assert response["title"] == "Example Domain"
         assert response["content"]
+
+
+@pytest.mark.anyio
+async def test_list_documents_returns_documents():
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "list_documents",
+            {"limit": 20},
+        )
+        assert not result.is_error
+
+        response = json.loads(result.content[0].text)
+        assert "documents" in response
+        assert isinstance(response["documents"], list)
+        
